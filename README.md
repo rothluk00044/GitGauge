@@ -34,8 +34,6 @@ Technology Stack
 
 - CI/CD: GitHub Actions
 
-Hosting: GitHub Pages
-
 Contact
 - Created by Luke Roth -> rothluk00044@gmail.com
 

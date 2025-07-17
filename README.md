@@ -35,6 +35,6 @@ Technology Stack
 - CI/CD: GitHub Actions
 
 Contact
-- Created by Luke Roth -> rothluk00044@gmail.com
+- Created by Luke Roth - rothluk00044@gmail.com
 
 - GitHub: https://github.com/rothluk00044

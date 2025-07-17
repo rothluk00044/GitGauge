@@ -123,7 +123,7 @@ This will start:
 
 Open your browser and navigate to `http://localhost:5173`
 
-## 🔧 Production Deployment
+## Production Deployment
 
 ### GitHub Pages Deployment
 
@@ -180,7 +180,7 @@ EXPOSE 3001
 CMD ["npm", "start"]
 \`\`\`
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Analyzing a Repository
 

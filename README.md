@@ -1,4 +1,4 @@
-# GitGauge - Repository Analytics PlatformConfig
+# GitGauge - Repository Analytics Platform
 
 GitGauge is a GitHub repository analytics platform that provides comprehensive insights into repository health, team productivity, and code quality metrics. Built with modern web technologies and designed for professional development teams.
 

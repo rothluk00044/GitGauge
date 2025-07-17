@@ -123,7 +123,7 @@ This will start:
 
 Open your browser and navigate to `http://localhost:5173`
 
-## 🔧 Production Deployment
+## Production Deployment
 
 ### GitHub Pages Deployment
 

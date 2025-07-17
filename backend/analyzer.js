@@ -38,7 +38,7 @@ async function analyzeRepository(repoUrl) {
       try {
         await git.clone(repoUrl, tempDir, [
           "--depth",
-          "200", // Increased depth for better analysis
+          "500", // Increased depth for better analysis
           "--single-branch",
           "--branch",
           repoData.defaultBranch || "main",
@@ -46,7 +46,7 @@ async function analyzeRepository(repoUrl) {
       } catch (cloneError) {
         // Try with main branch if default branch fails
         logger.warn("Clone with default branch failed, trying main branch")
-        await git.clone(repoUrl, tempDir, ["--depth", "200"])
+        await git.clone(repoUrl, tempDir, ["--depth", "500"])
       }
 
       const repoGit = simpleGit(tempDir)
@@ -81,22 +81,29 @@ async function analyzeRepository(repoUrl) {
         },
         repository: repoData,
         commits:
-          commitAnalysis.status === "fulfilled" ? commitAnalysis.value : { error: commitAnalysis.reason?.message },
+          commitAnalysis.status === "fulfilled"
+            ? commitAnalysis.value
+            : { error: commitAnalysis.reason?.message, total: 0 },
         pullRequests:
           pullRequestAnalysis.status === "fulfilled"
             ? pullRequestAnalysis.value
-            : { error: pullRequestAnalysis.reason?.message },
-        issues: issueAnalysis.status === "fulfilled" ? issueAnalysis.value : { error: issueAnalysis.reason?.message },
+            : { error: pullRequestAnalysis.reason?.message, total: 0 },
+        issues:
+          issueAnalysis.status === "fulfilled"
+            ? issueAnalysis.value
+            : { error: issueAnalysis.reason?.message, total: 0 },
         contributors:
           contributorAnalysis.status === "fulfilled"
             ? contributorAnalysis.value
-            : { error: contributorAnalysis.reason?.message },
+            : { error: contributorAnalysis.reason?.message, total: 0 },
         codeChurn:
           codeChurnAnalysis.status === "fulfilled"
             ? codeChurnAnalysis.value
-            : { error: codeChurnAnalysis.reason?.message },
+            : { error: codeChurnAnalysis.reason?.message, totalAdditions: 0, totalDeletions: 0 },
         branches:
-          branchAnalysis.status === "fulfilled" ? branchAnalysis.value : { error: branchAnalysis.reason?.message },
+          branchAnalysis.status === "fulfilled"
+            ? branchAnalysis.value
+            : { error: branchAnalysis.reason?.message, total: 0 },
         timestamp: new Date().toISOString(),
       }
 
@@ -166,9 +173,8 @@ async function analyzeCommits(git, owner, repo) {
   try {
     logger.info("Analyzing commits...")
 
-    // Get commit log with more comprehensive data
-    const log = await git.log(["--all", "--since=1 year ago", "--pretty=fuller", "--stat"])
-
+    // Get commit log with comprehensive data
+    const log = await git.log(["--all", "--since=1 year ago", "--pretty=fuller"])
     const commits = log.all
 
     if (commits.length === 0) {
@@ -228,7 +234,15 @@ async function analyzeCommits(git, owner, repo) {
     }
   } catch (error) {
     logger.error("Commit analysis failed:", error)
-    throw new Error(`Commit analysis failed: ${error.message}`)
+    return {
+      total: 0,
+      byMonth: {},
+      byDay: {},
+      byAuthor: {},
+      averagePerDay: 0,
+      recentActivity: [],
+      error: error.message,
+    }
   }
 }
 
@@ -241,8 +255,8 @@ async function analyzePullRequests(owner, repo) {
     let page = 1
     const perPage = 100
 
-    while (page <= 3) {
-      // Limit to 300 PRs for performance
+    while (page <= 5) {
+      // Limit to 500 PRs for performance
       const { data: pulls } = await octokit.rest.pulls.list({
         owner,
         repo,
@@ -314,7 +328,16 @@ async function analyzePullRequests(owner, repo) {
     }
   } catch (error) {
     logger.error("Pull request analysis failed:", error)
-    throw new Error(`Pull request analysis failed: ${error.message}`)
+    return {
+      total: 0,
+      open: 0,
+      closed: 0,
+      merged: 0,
+      mergeRate: 0,
+      averageReviewTime: 0,
+      recent: [],
+      error: error.message,
+    }
   }
 }
 
@@ -326,8 +349,8 @@ async function analyzeIssues(owner, repo) {
     const allIssues = []
     let page = 1
 
-    while (page <= 3) {
-      // Limit to 300 issues
+    while (page <= 5) {
+      // Limit to 500 issues
       const { data: issues } = await octokit.rest.issues.listForRepo({
         owner,
         repo,
@@ -404,7 +427,15 @@ async function analyzeIssues(owner, repo) {
     }
   } catch (error) {
     logger.error("Issue analysis failed:", error)
-    throw new Error(`Issue analysis failed: ${error.message}`)
+    return {
+      total: 0,
+      open: 0,
+      closed: 0,
+      closeRate: 0,
+      labels: {},
+      recent: [],
+      error: error.message,
+    }
   }
 }
 
@@ -473,7 +504,13 @@ async function analyzeContributors(owner, repo) {
     }
   } catch (error) {
     logger.error("Contributor analysis failed:", error)
-    throw new Error(`Contributor analysis failed: ${error.message}`)
+    return {
+      total: 0,
+      top: [],
+      busFactor: 0,
+      distribution: {},
+      error: error.message,
+    }
   }
 }
 
@@ -481,12 +518,16 @@ async function analyzeCodeChurn(git) {
   try {
     logger.info("Analyzing code churn...")
 
-    // Get detailed commit statistics
-    const log = await git.log(["--numstat", "--since=6 months ago", "--pretty=format:%H|%an|%ad|%s", "--date=iso"])
+    // Get detailed commit statistics with numstat
+    const log = await git.raw([
+      "log",
+      "--numstat",
+      "--since=6 months ago",
+      "--pretty=format:%H|%an|%ad|%s",
+      "--date=iso",
+    ])
 
-    const commits = log.all
-
-    if (commits.length === 0) {
+    if (!log || log.trim() === "") {
       return {
         totalAdditions: 0,
         totalDeletions: 0,
@@ -497,36 +538,46 @@ async function analyzeCodeChurn(git) {
       }
     }
 
+    const commits = log.split("\n\n").filter((block) => block.trim())
+
     let totalAdditions = 0
     let totalDeletions = 0
     const churnByFile = {}
     const churnByMonth = {}
 
-    commits.forEach((commit) => {
-      const month = moment(commit.date).format("YYYY-MM")
+    commits.forEach((commitBlock) => {
+      const lines = commitBlock.split("\n")
+      const commitInfo = lines[0]
+      const fileStats = lines.slice(1).filter((line) => line.includes("\t"))
 
-      if (commit.diff && commit.diff.files) {
-        commit.diff.files.forEach((file) => {
-          const additions = Number.parseInt(file.insertions) || 0
-          const deletions = Number.parseInt(file.deletions) || 0
+      if (commitInfo) {
+        const [hash, author, date, message] = commitInfo.split("|")
+        const month = moment(date).format("YYYY-MM")
 
-          totalAdditions += additions
-          totalDeletions += deletions
+        if (!churnByMonth[month]) {
+          churnByMonth[month] = { additions: 0, deletions: 0 }
+        }
 
-          // Track by file
-          if (!churnByFile[file.file]) {
-            churnByFile[file.file] = { additions: 0, deletions: 0, commits: 0 }
+        fileStats.forEach((fileStat) => {
+          const parts = fileStat.split("\t")
+          if (parts.length >= 3) {
+            const additions = parts[0] === "-" ? 0 : Number.parseInt(parts[0]) || 0
+            const deletions = parts[1] === "-" ? 0 : Number.parseInt(parts[1]) || 0
+            const fileName = parts[2]
+
+            totalAdditions += additions
+            totalDeletions += deletions
+
+            churnByMonth[month].additions += additions
+            churnByMonth[month].deletions += deletions
+
+            if (!churnByFile[fileName]) {
+              churnByFile[fileName] = { additions: 0, deletions: 0, commits: 0 }
+            }
+            churnByFile[fileName].additions += additions
+            churnByFile[fileName].deletions += deletions
+            churnByFile[fileName].commits += 1
           }
-          churnByFile[file.file].additions += additions
-          churnByFile[file.file].deletions += deletions
-          churnByFile[file.file].commits += 1
-
-          // Track by month
-          if (!churnByMonth[month]) {
-            churnByMonth[month] = { additions: 0, deletions: 0 }
-          }
-          churnByMonth[month].additions += additions
-          churnByMonth[month].deletions += deletions
         })
       }
     })
@@ -555,7 +606,15 @@ async function analyzeCodeChurn(git) {
     }
   } catch (error) {
     logger.error("Code churn analysis failed:", error)
-    throw new Error(`Code churn analysis failed: ${error.message}`)
+    return {
+      totalAdditions: 0,
+      totalDeletions: 0,
+      netChange: 0,
+      topChurnedFiles: [],
+      churnRate: 0,
+      commitCount: 0,
+      error: error.message,
+    }
   }
 }
 
@@ -609,7 +668,12 @@ async function analyzeBranches(owner, repo) {
     }
   } catch (error) {
     logger.error("Branch analysis failed:", error)
-    throw new Error(`Branch analysis failed: ${error.message}`)
+    return {
+      total: 0,
+      branches: [],
+      protected: 0,
+      error: error.message,
+    }
   }
 }
 

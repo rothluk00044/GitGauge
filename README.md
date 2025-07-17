@@ -180,7 +180,7 @@ EXPOSE 3001
 CMD ["npm", "start"]
 \`\`\`
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Analyzing a Repository
 

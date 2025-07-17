@@ -1,0 +1,112 @@
+name: GitGauge Repository Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo-url:
+        description: 'GitHub repository URL to analyze (e.g., https://github.com/owner/repo)'
+        required: true
+        type: string
+      deploy:
+        description: 'Deploy dashboard after analysis'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  analyze-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install root dependencies
+      run: npm ci
+        
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: npm ci
+        
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+        
+    - name: Validate repository URL
+      run: |
+        if [[ ! "${{ github.event.inputs.repo-url }}" =~ ^https://github\.com/[^/]+/[^/]+/?$ ]]; then
+          echo " Invalid GitHub repository URL format"
+          echo "Expected format: https://github.com/owner/repository"
+          exit 1
+        fi
+        echo " Repository URL is valid"
+        
+    - name: Run repository analysis
+      working-directory: ./backend
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NODE_ENV: production
+      run: |
+        echo " Starting analysis for: ${{ github.event.inputs.repo-url }}"
+        timeout 1200 node analyze.js "${{ github.event.inputs.repo-url }}" || {
+          echo " Analysis timed out or failed"
+          exit 1
+        }
+        echo " Analysis completed successfully"
+        
+    - name: Verify analysis output
+      run: |
+        if [ ! -d "backend/reports" ] || [ -z "$(ls -A backend/reports)" ]; then
+          echo " No analysis reports generated"
+          exit 1
+        fi
+        echo " Analysis reports generated:"
+        ls -la backend/reports/
+        
+    - name: Copy analysis reports to frontend
+      run: |
+        mkdir -p frontend/public/reports
+        cp backend/reports/*.json frontend/public/reports/ 2>/dev/null || {
+          echo " No JSON reports to copy"
+        }
+        echo " Reports copied to frontend"
+        
+    - name: Build frontend
+      working-directory: ./frontend
+      env:
+        NODE_ENV: production
+      run: |
+        echo " Building frontend..."
+        npm run build
+        echo " Frontend build completed"
+        
+    - name: Verify build output
+      run: |
+        if [ ! -d "frontend/dist" ]; then
+          echo " Frontend build failed - no dist directory"
+          exit 1
+        fi
+        echo " Frontend build verified"
+        ls -la frontend/dist/
+        
+    - name: Deploy to GitHub Pages
+      if: ${{ github.event.inputs.deploy == 'true' }}
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./frontend/dist
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user

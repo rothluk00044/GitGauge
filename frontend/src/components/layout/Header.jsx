@@ -1,17 +1,13 @@
-import { Link } from 'react-router-dom';
+import AppIcon from '../ui/AppIcon';
 
 export default function Header() {
   return (
-    <header className="bg-gray-800 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">GitGauge</Link>
-        <nav>
-          <ul className="flex space-x-4">
-            <li><Link to="/" className="hover:text-blue-300">Dashboard</Link></li>
-            <li><Link to="/analyze" className="hover:text-blue-300">Analyze</Link></li>
-            <li><Link to="/settings" className="hover:text-blue-300">Settings</Link></li>
-          </ul>
-        </nav>
+    <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <div className="container mx-auto px-4 py-3 flex items-center">
+        <AppIcon className="w-8 h-8 mr-2" />
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          GitGauge
+        </h1>
       </div>
     </header>
   );

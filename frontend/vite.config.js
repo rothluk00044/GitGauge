@@ -9,6 +9,7 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     minify: "terser",
+    target: "es2020",
     rollupOptions: {
       output: {
         manualChunks: {
@@ -16,6 +17,15 @@ export default defineConfig({
           charts: ["chart.js", "react-chartjs-2"],
           utils: ["axios", "moment", "lucide-react"],
         },
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
+      },
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
       },
     },
   },
@@ -27,11 +37,18 @@ export default defineConfig({
         target: "http://localhost:3001",
         changeOrigin: true,
         secure: false,
+        timeout: 300000,
       },
     },
   },
   preview: {
     port: 4173,
     host: true,
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "chart.js", "react-chartjs-2", "axios", "moment", "lucide-react"],
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   },
 })

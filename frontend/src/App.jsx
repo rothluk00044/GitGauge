@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Github, Activity, GitPullRequest, AlertCircle, Users, Zap } from "lucide-react"
+import { Github, Activity, GitPullRequest, AlertCircle, Users, BarChart3, TrendingUp } from "lucide-react"
 import Dashboard from "./components/Dashboard"
 import AnalyzeForm from "./components/AnalyzeForm"
 import LoadingSpinner from "./components/LoadingSpinner"
 import ErrorBoundary from "./components/ErrorBoundary"
 
 // Configure axios defaults
-axios.defaults.timeout = 300000 // 5 minutes timeout for analysis
+axios.defaults.timeout = 300000
 axios.defaults.baseURL = import.meta.env.PROD ? "https://rothluk00044.github.io/GitGauge" : "http://localhost:3001"
 
 function App() {
@@ -46,7 +46,6 @@ function App() {
     setError(null)
     setProgress(0)
 
-    // Simulate progress for better UX
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 90) return prev
@@ -98,41 +97,39 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center cursor-pointer" onClick={resetView}>
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg mr-3">
-                  <Github className="h-6 w-6 text-white" />
+                <div className="bg-slate-900 p-2.5 rounded-xl mr-3">
+                  <BarChart3 className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    GitGauge
-                  </h1>
-                  <p className="text-sm text-gray-600">Repository Health Dashboard</p>
+                  <h1 className="text-2xl font-bold text-slate-900">GitGauge</h1>
+                  <p className="text-sm text-slate-600">Repository Analytics Platform</p>
                 </div>
               </div>
               <div className="flex items-center space-x-6">
-                <div className="hidden md:flex items-center space-x-4 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <Activity className="h-4 w-4 mr-1 text-green-500" />
-                    Real-time Analysis
+                <div className="hidden md:flex items-center space-x-6">
+                  <div className="flex items-center text-sm text-slate-600">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                    Live Analysis
                   </div>
-                  <div className="flex items-center">
-                    <Zap className="h-4 w-4 mr-1 text-yellow-500" />
-                    AI-Powered Insights
+                  <div className="flex items-center text-sm text-slate-600">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Advanced Metrics
                   </div>
                 </div>
                 <a
                   href="https://github.com/rothluk00044/GitGauge"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center text-slate-600 hover:text-slate-900 transition-colors"
                 >
-                  <Github className="h-5 w-5 mr-1" />
-                  <span className="hidden sm:inline">View Source</span>
+                  <Github className="h-5 w-5 mr-2" />
+                  <span className="hidden sm:inline font-medium">Source</span>
                 </a>
               </div>
             </div>
@@ -141,19 +138,23 @@ function App() {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {!report && !loading && (
-            <div className="space-y-8">
+            <div className="space-y-12">
               {/* Hero Section */}
-              <div className="text-center">
-                <div className="mb-6">
-                  <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-sm font-medium mb-4">
-                    <Zap className="h-4 w-4 mr-2" />
-                    Powered by GitHub API & Advanced Analytics
+              <div className="text-center py-12">
+                <div className="mb-8">
+                  <div className="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-slate-700 text-sm font-medium mb-6">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Enterprise-Grade Repository Intelligence
                   </div>
                 </div>
-                <h2 className="text-4xl font-bold text-gray-900 mb-4">Analyze Your GitHub Repository</h2>
-                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                  Get comprehensive insights into your repository's health, including commit patterns, pull request
-                  metrics, issue trends, contributor activity, and code churn analysis.
+                <h2 className="text-5xl font-bold text-slate-900 mb-6 leading-tight">
+                  Comprehensive GitHub
+                  <br />
+                  <span className="text-blue-600">Repository Analysis</span>
+                </h2>
+                <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+                  Deep insights into repository health, development patterns, team productivity, and code quality
+                  metrics. Make data-driven decisions with comprehensive analytics.
                 </p>
               </div>
 
@@ -164,12 +165,15 @@ function App() {
 
               {/* Recent Reports */}
               {recentReports.length > 0 && (
-                <div className="mt-16">
-                  <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900">Recent Analysis Reports</h3>
+                <div className="mt-20">
+                  <div className="flex items-center justify-between mb-10">
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-900">Recent Analysis Reports</h3>
+                      <p className="text-slate-600 mt-1">Previously analyzed repositories</p>
+                    </div>
                     <button
                       onClick={fetchRecentReports}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       Refresh
                     </button>
@@ -178,25 +182,27 @@ function App() {
                     {recentReports.map((reportItem) => (
                       <div
                         key={reportItem.filename}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all duration-200"
+                        className="bg-white rounded-2xl border border-slate-200 p-6 cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all duration-200"
                         onClick={() => loadReport(reportItem.filename)}
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-gray-900 truncate text-lg">
-                            {reportItem.metadata.repoName}
-                          </h4>
-                          <Github className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {reportItem.metadata.owner}/{reportItem.metadata.repoName}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{new Date(reportItem.timestamp).toLocaleDateString()}</span>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="bg-slate-100 p-2 rounded-lg">
+                            <Github className="h-5 w-5 text-slate-600" />
+                          </div>
                           {reportItem.performance && (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
                               {(reportItem.performance.analysisTime / 1000).toFixed(1)}s
                             </span>
                           )}
+                        </div>
+                        <h4 className="font-semibold text-slate-900 text-lg mb-2 truncate">
+                          {reportItem.metadata.repoName}
+                        </h4>
+                        <p className="text-sm text-slate-600 mb-4">
+                          {reportItem.metadata.owner}/{reportItem.metadata.repoName}
+                        </p>
+                        <div className="text-xs text-slate-500">
+                          Analyzed {new Date(reportItem.timestamp).toLocaleDateString()}
                         </div>
                       </div>
                     ))}
@@ -205,45 +211,51 @@ function App() {
               )}
 
               {/* Features Grid */}
-              <div className="mt-20">
-                <h3 className="text-2xl font-bold text-gray-900 mb-12 text-center">
-                  Comprehensive Repository Analysis
-                </h3>
+              <div className="mt-24">
+                <div className="text-center mb-16">
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4">Advanced Analytics Suite</h3>
+                  <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                    Comprehensive metrics and insights to understand your repository's health and team performance
+                  </p>
+                </div>
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                   {[
                     {
                       icon: Activity,
-                      title: "Commit Activity",
-                      description: "Track commit frequency, patterns, and author contributions over time",
+                      title: "Commit Analytics",
+                      description: "Detailed commit patterns, frequency analysis, and author contribution metrics",
                       color: "blue",
                     },
                     {
                       icon: GitPullRequest,
-                      title: "Pull Request Metrics",
-                      description: "Analyze PR status, merge rates, and average review times",
-                      color: "green",
+                      title: "Pull Request Intelligence",
+                      description: "PR lifecycle analysis, review times, merge patterns, and collaboration metrics",
+                      color: "emerald",
                     },
                     {
                       icon: AlertCircle,
-                      title: "Issue Tracking",
-                      description: "Monitor issue trends, resolution rates, and label distribution",
-                      color: "yellow",
+                      title: "Issue Management",
+                      description: "Issue lifecycle tracking, resolution patterns, and project health indicators",
+                      color: "amber",
                     },
                     {
                       icon: Users,
-                      title: "Contributor Analysis",
-                      description: "Understand team dynamics, bus factor, and contribution patterns",
+                      title: "Team Dynamics",
+                      description: "Contributor analysis, knowledge distribution, and team collaboration insights",
                       color: "purple",
                     },
                   ].map((feature, index) => (
-                    <div key={index} className="text-center group">
+                    <div
+                      key={index}
+                      className="bg-white rounded-2xl border border-slate-200 p-8 text-center group hover:border-slate-300 transition-colors"
+                    >
                       <div
-                        className={`bg-${feature.color}-100 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}
+                        className={`bg-${feature.color}-100 rounded-2xl p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center`}
                       >
                         <feature.icon className={`h-8 w-8 text-${feature.color}-600`} />
                       </div>
-                      <h4 className="font-semibold text-gray-900 mb-2 text-lg">{feature.title}</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                      <h4 className="font-semibold text-slate-900 mb-3 text-lg">{feature.title}</h4>
+                      <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
                     </div>
                   ))}
                 </div>
@@ -254,18 +266,24 @@ function App() {
           {loading && <LoadingSpinner progress={progress} />}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 mb-8">
               <div className="flex items-start">
-                <AlertCircle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div className="bg-red-100 p-2 rounded-lg mr-4">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-red-800 mb-2">Analysis Error</h3>
-                  <p className="text-red-700 mb-3">{error.message}</p>
-                  {error.code && <p className="text-sm text-red-600">Error Code: {error.code}</p>}
+                  <h3 className="text-lg font-semibold text-red-900 mb-2">Analysis Failed</h3>
+                  <p className="text-red-700 mb-4">{error.message}</p>
+                  {error.code && (
+                    <p className="text-sm text-red-600 mb-4 font-mono bg-red-100 px-3 py-1 rounded">
+                      Error Code: {error.code}
+                    </p>
+                  )}
                   <button
                     onClick={() => setError(null)}
-                    className="mt-4 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
-                    Dismiss
+                    Dismiss Error
                   </button>
                 </div>
               </div>
@@ -276,11 +294,21 @@ function App() {
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center text-gray-600">
-              <p className="mb-2">Built with ❤️ using React, Node.js, and GitHub API</p>
-              <p className="text-sm">© 2024 GitGauge. Open source project for repository analytics.</p>
+        <footer className="bg-white border-t border-slate-200 mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-slate-900 p-2 rounded-lg mr-3">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-lg font-semibold text-slate-900">GitGauge</span>
+              </div>
+              <p className="text-slate-600 mb-2">
+                Built with React, Node.js, and GitHub API for comprehensive repository analytics
+              </p>
+              <p className="text-sm text-slate-500">
+                Open source repository intelligence platform for development teams
+              </p>
             </div>
           </div>
         </footer>
